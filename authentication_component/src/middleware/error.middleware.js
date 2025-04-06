@@ -1,7 +1,7 @@
 /**
  * Error handling middleware
  */
-const logger = require('../config/logger');
+import logger from '../config/logger.js';
 
 // PUBLIC_INTERFACE
 /**
@@ -57,6 +57,6 @@ const errorHandler = (err, req, res, _next) => {
   });
 };
 
-module.exports = {
+export {
   errorHandler
 };

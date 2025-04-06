@@ -1,8 +1,8 @@
 /**
  * Email utility functions
  */
-const nodemailer = require('nodemailer');
-const logger = require('../config/logger');
+import nodemailer from 'nodemailer';
+import logger from '../config/logger.js';
 
 // Create nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -93,7 +93,7 @@ const sendPasswordResetEmail = async (email, token) => {
   });
 };
 
-module.exports = {
+export {
   sendEmail,
   sendVerificationEmail,
   sendPasswordResetEmail

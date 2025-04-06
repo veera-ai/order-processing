@@ -1,8 +1,8 @@
 /**
  * JWT configuration and utility functions
  */
-const jwt = require('jsonwebtoken');
-const logger = require('./logger');
+import jwt from 'jsonwebtoken';
+import logger from './logger.js';
 
 // PUBLIC_INTERFACE
 /**
@@ -92,7 +92,7 @@ const generatePasswordResetToken = (userId) => {
   }
 };
 
-module.exports = {
+export {
   generateToken,
   generateRefreshToken,
   verifyToken,

@@ -1,11 +1,11 @@
 /**
  * Redis configuration for session management and caching
  */
-const redis = require('redis');
-const logger = require('./logger');
+import { createClient } from 'redis';
+import logger from './logger.js';
 
 // Create Redis client
-const redisClient = redis.createClient({
+const redisClient = createClient({
   host: process.env.REDIS_HOST || 'localhost',
   port: process.env.REDIS_PORT || 6379,
   password: process.env.REDIS_PASSWORD || '',
@@ -80,7 +80,7 @@ const del = async (key) => {
   }
 };
 
-module.exports = {
+export {
   connectRedis,
   redisClient,
   get,
