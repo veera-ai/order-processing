@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { join } from 'node:path';
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, readFileSync } from 'node:fs';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import logger from './config/logger.js';
@@ -47,8 +47,9 @@ app.use('/api/v1/users', userRoutes);
 // API documentation route
 if (process.env.NODE_ENV !== 'production') {
   try {
+    const swaggerPath = join(process.cwd(), 'src/docs/swagger.json');
     const swaggerDocument = JSON.parse(
-      require('fs').readFileSync(join(process.cwd(), 'src/docs/swagger.json'), 'utf8')
+      readFileSync(swaggerPath, 'utf8')
     );
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
     logger.info('Swagger UI initialized successfully');
