@@ -5,7 +5,7 @@
 import mongoose from 'mongoose';
 import logger from './logger.js';
 
-// Connection options for better reliability and performance
+// Connection options optimized for MongoDB Atlas
 const connectionOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -18,14 +18,45 @@ const connectionOptions = {
   minPoolSize: 2,
   maxIdleTimeMS: 30000,
   connectTimeoutMS: 30000,
+  wtimeoutMS: 2500,           // Write concern timeout
+  ssl: true,                  // Required for Atlas
+  authSource: 'admin',        // Default auth database
+  keepAlive: true,           // Keep connection alive
+  keepAliveInitialDelay: 300000 // 5 minutes initial delay
 };
 
-// Validate MongoDB URI format
+// Validate MongoDB Atlas URI format
 const isValidMongoURI = (uri) => {
   if (!uri) return false;
-  // Basic MongoDB URI format validation
-  const mongoURIPattern = /^mongodb(\+srv)?:\/\/.+/;
-  return mongoURIPattern.test(uri);
+
+  try {
+    // Parse the URI to validate its components
+    const url = new URL(uri);
+    
+    // Check protocol (must be mongodb+srv:// for Atlas)
+    if (url.protocol !== 'mongodb+srv:' && url.protocol !== 'mongodb:') {
+      logger.warn('Invalid MongoDB protocol', { protocol: url.protocol });
+      return false;
+    }
+
+    // Validate Atlas domain
+    if (!url.hostname.endsWith('.mongodb.net')) {
+      logger.warn('Not a valid Atlas domain', { hostname: url.hostname });
+      return false;
+    }
+
+    // Check for required query parameters
+    const params = new URLSearchParams(url.search);
+    if (!params.has('retryWrites')) {
+      logger.warn('Missing retryWrites parameter in URI');
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    logger.error('Error validating MongoDB URI:', { error: error.message });
+    return false;
+  }
 };
 
 // Mask sensitive parts of MongoDB URI for logging
@@ -75,19 +106,18 @@ const getMongoURI = () => {
     return uri;
   }
 
-  // For development, allow localhost fallback
+  // For development environment
   if (isDevelopment) {
     logger.debug('Running in development mode');
-    if (isValidMongoURI(configuredURI)) {
-      logger.debug('Using configured MongoDB URI:', { uri: maskMongoURI(configuredURI) });
-      return configuredURI;
+    if (!isValidMongoURI(configuredURI)) {
+      logger.error('Invalid or missing MongoDB Atlas URI in development environment', {
+        hasConfiguredURI: !!configuredURI,
+        validationResult: false
+      });
+      throw new Error('Development environment requires a valid MongoDB Atlas URI. Please set MONGODB_URI in environment variables.');
     }
-    logger.warn('No valid MongoDB URI configured, falling back to localhost (development only)', {
-      configuredURI: maskMongoURI(configuredURI),
-      validationResult: false,
-      fallbackURI: 'mongodb://localhost:27017/auth_db'
-    });
-    return 'mongodb://localhost:27017/auth_db';
+    logger.debug('Using configured MongoDB Atlas URI:', { uri: maskMongoURI(configuredURI) });
+    return configuredURI;
   }
 
   // For other environments (testing, staging, etc.)
@@ -157,11 +187,25 @@ const connectDB = async () => {
         throw new Error('MongoDB connection URI is not configured');
       }
 
+      logger.info('Initiating MongoDB Atlas connection...', {
+        host: new URL(mongoURI).hostname,
+        options: {
+          ...connectionOptions,
+          // Mask sensitive data
+          ssl: connectionOptions.ssl,
+          maxPoolSize: connectionOptions.maxPoolSize,
+          minPoolSize: connectionOptions.minPoolSize
+        }
+      });
+
       const conn = await mongoose.connect(mongoURI, connectionOptions);
       
-      logger.info(`MongoDB Connected: ${conn.connection.host}`);
-      logger.info(`Database name: ${conn.connection.name}`);
-      logger.info(`Connection state: ${mongoose.connection.readyState}`);
+      logger.info('MongoDB Atlas connection established', {
+        host: conn.connection.host,
+        database: conn.connection.name,
+        state: mongoose.STATES[mongoose.connection.readyState],
+        poolSize: conn.connection.getClient().topology?.connections?.size || 'unknown'
+      });
       
       return conn;
     } catch (error) {
