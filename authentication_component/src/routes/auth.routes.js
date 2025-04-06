@@ -9,14 +9,20 @@ import {
   requestPasswordReset,
   resetPassword
 } from '../controllers/auth.controller.js';
+import {
+  registerValidation,
+  loginValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation
+} from '../middleware/validation.middleware.js';
 
 const router = Router();
 
 // Public routes
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', registerValidation, register);
+router.post('/login', loginValidation, login);
 router.get('/verify-email/:token', verifyEmail);
-router.post('/request-password-reset', requestPasswordReset);
-router.post('/reset-password', resetPassword);
+router.post('/request-password-reset', forgotPasswordValidation, requestPasswordReset);
+router.post('/reset-password', resetPasswordValidation, resetPassword);
 
 export default router;

@@ -1,8 +1,8 @@
 /**
  * Input validation middleware
  */
-const { validationResult, body } = require('express-validator');
-const { validatePasswordStrength } = require('../utils/password.util');
+import { validationResult, body } from 'express-validator';
+import { validatePasswordStrength } from '../utils/password.util.js';
 
 // PUBLIC_INTERFACE
 /**
@@ -123,7 +123,7 @@ const updateProfileValidation = [
   validate
 ];
 
-module.exports = {
+export {
   validate,
   registerValidation,
   loginValidation,

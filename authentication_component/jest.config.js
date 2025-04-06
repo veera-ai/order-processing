@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   testEnvironment: 'node',
   verbose: true,
   collectCoverage: true,
@@ -10,5 +10,6 @@ module.exports = {
   testMatch: [
     '**/tests/**/*.test.js'
   ],
-  setupFiles: ['dotenv/config']
+  setupFiles: ['dotenv/config'],
+  transform: {}
 };

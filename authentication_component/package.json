@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest --runInBand",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint . --ext .js",
     "build": "echo 'Build completed'",
     "docs": "swagger-jsdoc -d src/docs/swaggerDef.js -o src/docs/swagger.json"
