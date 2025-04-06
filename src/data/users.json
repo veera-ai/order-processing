@@ -1,0 +1,24 @@
+{
+  "users": [],
+  "indexes": {
+    "email": {},
+    "username": {}
+  },
+  "metadata": {
+    "lastId": 0,
+    "version": "1.0",
+    "created": "2024-01-09T00:00:00.000Z",
+    "schema": {
+      "user": {
+        "id": "number",
+        "username": "string",
+        "email": "string",
+        "password": "string",
+        "created": "date",
+        "lastLogin": "date",
+        "status": "string",
+        "role": "string"
+      }
+    }
+  }
+}

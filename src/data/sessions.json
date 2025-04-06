@@ -1,0 +1,27 @@
+{
+  "sessions": [],
+  "indexes": {
+    "userId": {},
+    "token": {}
+  },
+  "metadata": {
+    "lastCleanup": null,
+    "version": "1.0",
+    "created": "2024-01-09T00:00:00.000Z",
+    "schema": {
+      "session": {
+        "token": "string",
+        "userId": "number",
+        "created": "date",
+        "expires": "date",
+        "lastActivity": "date",
+        "userAgent": "string",
+        "ip": "string"
+      }
+    },
+    "settings": {
+      "sessionTimeout": 3600,
+      "maxSessionsPerUser": 5
+    }
+  }
+}
