@@ -2,8 +2,8 @@
   "metadata": {
     "version": "1.0.0",
     "lastId": 0,
-    "created": "AUTO_TIMESTAMP",
-    "lastModified": "AUTO_TIMESTAMP"
+    "created": "2024-01-09T12:00:00.000Z",
+    "updated": "2024-01-09T12:00:00.000Z"
   },
   "indexes": {
     "email": {},
