@@ -11,9 +11,8 @@ export default {
     '**/tests/**/*.test.js'
   ],
   setupFiles: ['./tests/setup.js'],
-  extensionsToTreatAsEsm: ['.js'],
   moduleNameMapper: {
-    '^(\.{1,2}/.*)\.js$': '$1'
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   transform: {},
   transformIgnorePatterns: [

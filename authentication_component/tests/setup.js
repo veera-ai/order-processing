@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { jest } from '@jest/globals';
+import path from 'path';
 
 // Load environment variables
 config();
@@ -8,6 +9,8 @@ config();
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret';
 process.env.PORT = '3001';
+process.env.JWT_EXPIRE = '1h';
+process.env.JSON_STORAGE_PATH = path.join(process.cwd(), 'data');
 
 // Global Jest configurations
 jest.setTimeout(10000); // 10 second timeout for tests
@@ -21,7 +24,4 @@ global.console = {
   log: jest.fn()
 };
 
-// Clean up function to run after each test
-afterEach(() => {
-  jest.clearAllMocks();
-});
+// Note: afterEach is defined in the test files

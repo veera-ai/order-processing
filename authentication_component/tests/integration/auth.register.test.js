@@ -2,6 +2,7 @@
  * Tests for the user registration endpoint
  */
 import request from 'supertest';
+import { jest, describe, test, expect, beforeAll, beforeEach } from '@jest/globals';
 import app from '../../src/app.js';
 import User from '../../src/models/user.model.js';
 import { connectDB } from '../../src/config/database.js';
