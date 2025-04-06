@@ -1,8 +1,8 @@
 /**
  * MongoDB database configuration
  */
-const mongoose = require('mongoose');
-const logger = require('./logger');
+import mongoose from 'mongoose';
+import logger from './logger.js';
 
 // PUBLIC_INTERFACE
 /**
@@ -23,4 +23,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = { connectDB };
+export { connectDB };

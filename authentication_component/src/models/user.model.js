@@ -1,8 +1,8 @@
 /**
  * User model for MongoDB
  */
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -116,4 +116,4 @@ userSchema.methods.incrementLoginAttempts = async function() {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;

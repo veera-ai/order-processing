@@ -1,7 +1,7 @@
 /**
  * Password utility functions
  */
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
 // PUBLIC_INTERFACE
 /**
@@ -78,7 +78,7 @@ const validatePasswordStrength = (password) => {
   };
 };
 
-module.exports = {
+export {
   hashPassword,
   comparePassword,
   validatePasswordStrength

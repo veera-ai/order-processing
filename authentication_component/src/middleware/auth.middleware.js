@@ -2,9 +2,9 @@
  * Authentication middleware
  */
 // Not using jwt directly since we're using the jwt config module
-const { verifyToken } = require('../config/jwt');
-const User = require('../models/user.model');
-const logger = require('../config/logger');
+import { verifyToken } from '../config/jwt.js';
+import User from '../models/user.model.js';
+import logger from '../config/logger.js';
 
 // PUBLIC_INTERFACE
 /**
@@ -76,6 +76,4 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  protect
-};
+export { protect };
