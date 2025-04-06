@@ -1,3 +1,6 @@
+# Data files
+src/data/*.json
+!src/data/.gitkeep
 
 # Python ignorables
 logs/
