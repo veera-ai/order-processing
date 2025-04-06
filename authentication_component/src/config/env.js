@@ -21,10 +21,9 @@ const loadEnvConfig = () => {
 // Required environment variables
 const REQUIRED_VARS = [
   'NODE_ENV',
-  'MONGODB_URI',
   'JWT_SECRET',
   'JWT_EXPIRE',
-  'REDIS_URL'
+  'JSON_STORAGE_PATH'
 ];
 
 // Optional environment variables with defaults
@@ -67,8 +66,7 @@ const logEnvStatus = () => {
     NODE_ENV: process.env.NODE_ENV,
     PORT: process.env.PORT,
     LOG_LEVEL: process.env.LOG_LEVEL,
-    MONGODB_URI_SET: !!process.env.MONGODB_URI,
-    REDIS_URL_SET: !!process.env.REDIS_URL,
+    JSON_STORAGE_PATH_SET: !!process.env.JSON_STORAGE_PATH,
     JWT_SECRET_SET: !!process.env.JWT_SECRET,
     JWT_EXPIRE_SET: !!process.env.JWT_EXPIRE,
     RATE_LIMIT_WINDOW: process.env.RATE_LIMIT_WINDOW,
@@ -94,9 +92,7 @@ const getEnvVar = (key, required = true) => {
 const env = {
   NODE_ENV: () => getEnvVar('NODE_ENV'),
   PORT: () => parseInt(getEnvVar('PORT', false)),
-  MONGODB_URI: () => getEnvVar('MONGODB_URI'),
-  MONGODB_REPLICA_SET_URI: () => getEnvVar('MONGODB_REPLICA_SET_URI', false),
-  REDIS_URL: () => getEnvVar('REDIS_URL'),
+  JSON_STORAGE_PATH: () => getEnvVar('JSON_STORAGE_PATH'),
   JWT_SECRET: () => getEnvVar('JWT_SECRET'),
   JWT_EXPIRE: () => getEnvVar('JWT_EXPIRE'),
   LOG_LEVEL: () => getEnvVar('LOG_LEVEL', false),
