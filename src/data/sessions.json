@@ -1,35 +1,13 @@
 {
   "metadata": {
     "version": "1.0.0",
-    "lastCleanup": "2024-01-09T00:00:00.000Z",
-    "created": "2024-01-09T00:00:00.000Z",
-    "lastModified": "2024-01-09T00:00:00.000Z",
-    "schema": {
-      "session": {
-        "id": "string",
-        "token": "string",
-        "userId": "number",
-        "created": "date",
-        "expires": "date",
-        "lastActivity": "date",
-        "userAgent": "string",
-        "ip": "string",
-        "deviceId": "string",
-        "refreshToken": "string",
-        "refreshTokenExpires": "date"
-      }
-    },
-    "settings": {
-      "sessionTimeout": 3600,
-      "maxSessionsPerUser": 5,
-      "refreshTokenTimeout": 604800,
-      "cleanupInterval": 3600
-    }
+    "lastCleanup": "AUTO_TIMESTAMP",
+    "created": "AUTO_TIMESTAMP",
+    "lastModified": "AUTO_TIMESTAMP"
   },
   "indexes": {
     "userId": {},
-    "token": {},
-    "refreshToken": {}
+    "token": {}
   },
   "sessions": []
 }
