@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Authentication Component
 
-## Getting Started
+A secure authentication service built with Node.js, Express.js, MongoDB, and Redis.
 
-First, run the development server:
+## Features
+
+- User registration and login
+- Email verification
+- Password reset functionality
+- JWT-based authentication
+- Rate limiting
+- Session management with Redis
+- Security headers with Helmet
+- Comprehensive logging with Winston
+
+## Prerequisites
+
+- Node.js v16 or higher
+- MongoDB
+- Redis
+- npm
+
+## Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy the environment example file and update with your configurations:
+   ```bash
+   cp .env.example .env
+   ```
+
+## Environment Variables
+
+Configure the following environment variables in your `.env` file:
+
+- `PORT`: Server port (default: 3000)
+- `MONGODB_URI`: MongoDB connection string
+- `REDIS_HOST`: Redis host
+- `REDIS_PORT`: Redis port
+- `JWT_SECRET`: Secret key for JWT tokens
+- `SMTP_*`: Email service configuration
+
+See `.env.example` for all available options.
+
+## Available Scripts
+
+- `npm run dev`: Start development server
+- `npm run build`: Build the application
+- `npm start`: Start production server
+- `npm test`: Run tests
+- `npm run lint`: Run ESLint
+
+## API Documentation
+
+API documentation is available via Swagger UI at `/api-docs` when the server is running.
+
+Main endpoints:
+
+### Authentication
+- POST `/auth/register`: Register new user
+- POST `/auth/login`: User login
+- GET `/auth/verify-email/:token`: Verify email
+- POST `/auth/request-password-reset`: Request password reset
+- POST `/auth/reset-password`: Reset password
+
+### User Management
+- GET `/user/profile`: Get user profile
+- PUT `/user/profile`: Update user profile
+- POST `/user/change-password`: Change password
+
+## Security Features
+
+- Password hashing with bcrypt
+- JWT-based authentication
+- Rate limiting
+- Security headers (Helmet)
+- Account locking after failed attempts
+- Session management
+- Input validation
+
+## Testing
+
+Run the test suite:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run tests with coverage:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run test:coverage
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Logging
 
-## Learn More
+Logs are written to `logs/app.log` and include:
+- API requests
+- Authentication events
+- Security events
+- Errors
 
-To learn more about Next.js, take a look at the following resources:
+## Error Handling
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The API returns consistent error responses in the following format:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```json
+{
+  "success": false,
+  "message": "Error description"
+}
+```
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
