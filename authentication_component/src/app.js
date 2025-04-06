@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import { join } from 'node:path';
 import { createWriteStream } from 'node:fs';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
 import logger from './config/logger.js';
 
 // Load environment variables
@@ -45,15 +46,15 @@ app.use('/api/v1/users', userRoutes);
 
 // API documentation route
 if (process.env.NODE_ENV !== 'production') {
-  import('swagger-ui-express')
-    .then(({ serve, setup }) => {
-      import('./docs/swagger.json')
-        .then((swaggerDocument) => {
-          app.use('/api-docs', serve, setup(swaggerDocument.default));
-        })
-        .catch(error => logger.error(`Error loading swagger document: ${error}`));
-    })
-    .catch(error => logger.error(`Error loading swagger-ui-express: ${error}`));
+  try {
+    const swaggerDocument = JSON.parse(
+      require('fs').readFileSync(join(process.cwd(), 'src/docs/swagger.json'), 'utf8')
+    );
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+    logger.info('Swagger UI initialized successfully');
+  } catch (error) {
+    logger.error(`Error initializing Swagger UI: ${error.message}`);
+  }
 }
 
 // Health check endpoint
