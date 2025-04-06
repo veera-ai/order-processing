@@ -10,6 +10,16 @@ export default {
   testMatch: [
     '**/tests/**/*.test.js'
   ],
-  setupFiles: ['dotenv/config'],
-  transform: {}
+  setupFiles: ['./tests/setup.js'],
+  extensionsToTreatAsEsm: ['.js'],
+  moduleNameMapper: {
+    '^(\.{1,2}/.*)\.js$': '$1'
+  },
+  transform: {},
+  transformIgnorePatterns: [
+    'node_modules/(?!(module-that-needs-transform)/)',
+  ],
+  testEnvironmentOptions: {
+    url: 'http://localhost'
+  }
 };
