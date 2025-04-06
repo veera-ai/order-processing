@@ -1,6 +1,7 @@
 /**
  * JSON file-based database configuration
  * Handles file operations, atomic writes, and data consistency
+ * This module provides a complete file-based storage solution without any external database dependencies
  */
 import fs from 'fs/promises';
 import path from 'path';
