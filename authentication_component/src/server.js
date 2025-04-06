@@ -4,7 +4,6 @@
 import app from './app.js';
 import logger from './config/logger.js';
 import { connectDB } from './config/database.js';
-import { connectRedis } from './config/redis.js';
 import { mkdir, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -20,11 +19,8 @@ if (!existsSync(logDir)) {
 // Start server
 const startServer = async () => {
   try {
-    // Connect to MongoDB
+    // Connect to database
     await connectDB();
-    
-    // Connect to Redis
-    await connectRedis();
     
     // Start Express server
     app.listen(PORT, () => {
