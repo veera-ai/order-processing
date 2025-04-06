@@ -6,6 +6,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import logger from './logger.js';
+
 // Database configuration
 const DB_CONFIG = {
   dataDir: path.join(process.cwd(), 'data'),
