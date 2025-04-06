@@ -8,12 +8,12 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { join } from 'node:path';
 import { createWriteStream, readFileSync } from 'node:fs';
-import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import logger from './config/logger.js';
+import { loadEnvConfig } from './config/env.js';
 
-// Load environment variables
-dotenv.config();
+// Load and validate environment configuration
+loadEnvConfig();
 
 // Import routes
 import authRoutes from './routes/auth.routes.js';

@@ -4,6 +4,7 @@
  */
 import mongoose from 'mongoose';
 import logger from './logger.js';
+import { env } from './env.js';
 
 // Connection options optimized for MongoDB Atlas
 const connectionOptions = {
@@ -72,17 +73,11 @@ const maskMongoURI = (uri) => {
 
 // Handle different deployment scenarios
 const getMongoURI = () => {
-  // Log all relevant environment variables
-  logger.debug('Environment configuration:', {
-    NODE_ENV: process.env.NODE_ENV || 'undefined',
-    MONGODB_URI_SET: process.env.MONGODB_URI ? 'true' : 'false',
-    MONGODB_REPLICA_SET_URI_SET: process.env.MONGODB_REPLICA_SET_URI ? 'true' : 'false'
-  });
-
-  const configuredURI = process.env.MONGODB_URI;
-  const replicaSetURI = process.env.MONGODB_REPLICA_SET_URI;
-  const isProduction = process.env.NODE_ENV === 'production';
-  const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+  // Get validated environment configuration
+  const configuredURI = env.MONGODB_URI();
+  const replicaSetURI = env.MONGODB_REPLICA_SET_URI();
+  const isProduction = env.isProduction();
+  const isDevelopment = env.isDevelopment();
 
   // Log masked URIs for debugging
   logger.debug('MongoDB URIs:', {
@@ -124,14 +119,14 @@ const getMongoURI = () => {
   logger.debug('Running in other environment mode');
   if (!isValidMongoURI(configuredURI)) {
     logger.error('Invalid MongoDB URI in non-production environment:', {
-      environment: process.env.NODE_ENV,
+      environment: env.NODE_ENV(),
       hasConfiguredURI: !!configuredURI,
       validationResult: false
     });
     throw new Error('Valid MongoDB URI is required. Please set MONGODB_URI in environment variables.');
   }
   logger.debug('Using configured MongoDB URI for environment:', {
-    environment: process.env.NODE_ENV,
+    environment: env.NODE_ENV(),
     uri: maskMongoURI(configuredURI)
   });
   return configuredURI;
