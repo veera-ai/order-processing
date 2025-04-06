@@ -28,36 +28,82 @@ const isValidMongoURI = (uri) => {
   return mongoURIPattern.test(uri);
 };
 
+// Mask sensitive parts of MongoDB URI for logging
+const maskMongoURI = (uri) => {
+  if (!uri) return 'undefined';
+  try {
+    const maskedURI = uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@');
+    return maskedURI;
+  } catch {
+    return 'invalid-uri-format';
+  }
+};
+
 // Handle different deployment scenarios
 const getMongoURI = () => {
+  // Log all relevant environment variables
+  logger.debug('Environment configuration:', {
+    NODE_ENV: process.env.NODE_ENV || 'undefined',
+    MONGODB_URI_SET: process.env.MONGODB_URI ? 'true' : 'false',
+    MONGODB_REPLICA_SET_URI_SET: process.env.MONGODB_REPLICA_SET_URI ? 'true' : 'false'
+  });
+
   const configuredURI = process.env.MONGODB_URI;
   const replicaSetURI = process.env.MONGODB_REPLICA_SET_URI;
   const isProduction = process.env.NODE_ENV === 'production';
   const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
+  // Log masked URIs for debugging
+  logger.debug('MongoDB URIs:', {
+    configuredURI: maskMongoURI(configuredURI),
+    replicaSetURI: maskMongoURI(replicaSetURI)
+  });
+
   // For production, require properly configured MongoDB URI
   if (isProduction) {
+    logger.debug('Running in production mode');
     const uri = replicaSetURI || configuredURI;
     if (!isValidMongoURI(uri)) {
+      logger.error('Invalid MongoDB URI in production:', {
+        hasReplicaSetURI: !!replicaSetURI,
+        hasConfiguredURI: !!configuredURI,
+        validationResult: false
+      });
       throw new Error('Production requires a valid MongoDB URI. Please set MONGODB_URI or MONGODB_REPLICA_SET_URI in environment variables.');
     }
+    logger.debug('Using production MongoDB URI:', { uri: maskMongoURI(uri) });
     return uri;
   }
 
   // For development, allow localhost fallback
   if (isDevelopment) {
+    logger.debug('Running in development mode');
     if (isValidMongoURI(configuredURI)) {
-      logger.debug('Using configured MongoDB URI');
+      logger.debug('Using configured MongoDB URI:', { uri: maskMongoURI(configuredURI) });
       return configuredURI;
     }
-    logger.warn('No valid MongoDB URI configured, falling back to localhost (development only)');
+    logger.warn('No valid MongoDB URI configured, falling back to localhost (development only)', {
+      configuredURI: maskMongoURI(configuredURI),
+      validationResult: false,
+      fallbackURI: 'mongodb://localhost:27017/auth_db'
+    });
     return 'mongodb://localhost:27017/auth_db';
   }
 
   // For other environments (testing, staging, etc.)
+  logger.debug('Running in other environment mode');
   if (!isValidMongoURI(configuredURI)) {
+    logger.error('Invalid MongoDB URI in non-production environment:', {
+      environment: process.env.NODE_ENV,
+      hasConfiguredURI: !!configuredURI,
+      validationResult: false
+    });
     throw new Error('Valid MongoDB URI is required. Please set MONGODB_URI in environment variables.');
   }
+  logger.debug('Using configured MongoDB URI for environment:', {
+    environment: process.env.NODE_ENV,
+    uri: maskMongoURI(configuredURI)
+  });
   return configuredURI;
 };
 
