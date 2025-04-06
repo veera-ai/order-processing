@@ -20,13 +20,45 @@ const connectionOptions = {
   connectTimeoutMS: 30000,
 };
 
+// Validate MongoDB URI format
+const isValidMongoURI = (uri) => {
+  if (!uri) return false;
+  // Basic MongoDB URI format validation
+  const mongoURIPattern = /^mongodb(\+srv)?:\/\/.+/;
+  return mongoURIPattern.test(uri);
+};
+
 // Handle different deployment scenarios
 const getMongoURI = () => {
-  const defaultURI = process.env.MONGODB_URI;
+  const configuredURI = process.env.MONGODB_URI;
   const replicaSetURI = process.env.MONGODB_REPLICA_SET_URI;
   const isProduction = process.env.NODE_ENV === 'production';
+  const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
-  return isProduction && replicaSetURI ? replicaSetURI : defaultURI;
+  // For production, require properly configured MongoDB URI
+  if (isProduction) {
+    const uri = replicaSetURI || configuredURI;
+    if (!isValidMongoURI(uri)) {
+      throw new Error('Production requires a valid MongoDB URI. Please set MONGODB_URI or MONGODB_REPLICA_SET_URI in environment variables.');
+    }
+    return uri;
+  }
+
+  // For development, allow localhost fallback
+  if (isDevelopment) {
+    if (isValidMongoURI(configuredURI)) {
+      logger.debug('Using configured MongoDB URI');
+      return configuredURI;
+    }
+    logger.warn('No valid MongoDB URI configured, falling back to localhost (development only)');
+    return 'mongodb://localhost:27017/auth_db';
+  }
+
+  // For other environments (testing, staging, etc.)
+  if (!isValidMongoURI(configuredURI)) {
+    throw new Error('Valid MongoDB URI is required. Please set MONGODB_URI in environment variables.');
+  }
+  return configuredURI;
 };
 
 // Monitor connection states
