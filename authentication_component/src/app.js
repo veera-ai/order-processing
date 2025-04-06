@@ -1,32 +1,33 @@
 /**
  * Main application file
  */
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
-const path = require('path');
-const fs = require('fs');
-const dotenv = require('dotenv');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import { join } from 'node:path';
+import { createWriteStream } from 'node:fs';
+import dotenv from 'dotenv';
+import logger from './config/logger.js';
 
 // Load environment variables
 dotenv.config();
 
 // Import routes
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
+import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 // Import middleware
-const { errorHandler } = require('./middleware/error.middleware');
-const { notFoundHandler } = require('./middleware/notFound.middleware');
+import { errorHandler } from './middleware/error.middleware.js';
+import { notFoundHandler } from './middleware/notFound.middleware.js';
 
 // Create Express app
 const app = express();
 
 // Setup request logging
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, '../logs/access.log'),
+const accessLogStream = createWriteStream(
+  join(process.cwd(), 'logs/access.log'),
   { flags: 'a' }
 );
 
@@ -44,9 +45,15 @@ app.use('/api/v1/users', userRoutes);
 
 // API documentation route
 if (process.env.NODE_ENV !== 'production') {
-  const swaggerUi = require('swagger-ui-express');
-  const swaggerDocument = require('./docs/swagger');
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  import('swagger-ui-express')
+    .then(({ serve, setup }) => {
+      import('./docs/swagger.json')
+        .then((swaggerDocument) => {
+          app.use('/api-docs', serve, setup(swaggerDocument.default));
+        })
+        .catch(error => logger.error(`Error loading swagger document: ${error}`));
+    })
+    .catch(error => logger.error(`Error loading swagger-ui-express: ${error}`));
 }
 
 // Health check endpoint
@@ -58,4 +65,4 @@ app.get('/health', (req, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

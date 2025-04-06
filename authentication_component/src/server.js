@@ -1,20 +1,20 @@
 /**
  * Server entry point
  */
-const app = require('./app');
-const logger = require('./config/logger');
-const { connectDB } = require('./config/database');
-const { connectRedis } = require('./config/redis');
+import app from './app.js';
+import logger from './config/logger.js';
+import { connectDB } from './config/database.js';
+import { connectRedis } from './config/redis.js';
+import { mkdir, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 // Set port
 const PORT = process.env.PORT || 3000;
 
 // Create directory for logs if it doesn't exist
-const fs = require('fs');
-const path = require('path');
-const logDir = path.join(__dirname, '../logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
+const logDir = join(process.cwd(), 'logs');
+if (!existsSync(logDir)) {
+  mkdir(logDir, { recursive: true });
 }
 
 // Start server
