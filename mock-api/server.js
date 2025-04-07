@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
+const generateSwaggerDocument = require('./swagger.js');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -23,7 +23,13 @@ app.use(morgan('dev')); // Logging
 app.use('/api', routes);
 
 // Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const swaggerDocument = generateSwaggerDocument();
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Order Processing API Documentation',
+  customfavIcon: '/favicon.ico'
+}));
 
 // Root route
 app.get('/', (req, res) => {
