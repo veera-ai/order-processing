@@ -31,7 +31,6 @@
   "paths": {
     "/api/status": {
       "get": {
-        "security": [],
         "summary": "API Status",
         "description": "Check if the API is running",
         "tags": ["Status"],
@@ -621,6 +620,7 @@
     }
   },
   "components": {
+    "securitySchemes": null,
     "schemas": {
       "Address": {
         "type": "object",
