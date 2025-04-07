@@ -2,16 +2,51 @@
  * Order model and data access functions
  */
 const { v4: uuidv4 } = require('uuid');
-const { generateMockOrders } = require('../utils/mockData');
+const fs = require('fs');
+const path = require('path');
 
-// In-memory data store
-let orders = generateMockOrders(5);
+// Database file path
+const dbPath = path.join(__dirname, '../data/database.json');
+
+/**
+ * Read orders from database file
+ * @returns {Array} Array of orders
+ */
+const readOrdersFromFile = () => {
+  try {
+    const data = fs.readFileSync(dbPath, 'utf8');
+    const db = JSON.parse(data);
+    return db.orders || [];
+  } catch (error) {
+    console.error('Error reading orders from database:', error);
+    return [];
+  }
+};
+
+/**
+ * Save orders to database file
+ * @param {Array} orders - Array of orders to save
+ */
+const saveOrdersToFile = (orders) => {
+  try {
+    const data = fs.readFileSync(dbPath, 'utf8');
+    const db = JSON.parse(data);
+    db.orders = orders;
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+  } catch (error) {
+    console.error('Error saving orders to database:', error);
+  }
+};
+
+// Initialize orders from database
+let orders = readOrdersFromFile();
 
 /**
  * Get all orders
  * @returns {Array} Array of orders
  */
 const getOrders = () => {
+  orders = readOrdersFromFile();
   return orders;
 };
 
@@ -39,6 +74,7 @@ const createOrder = (orderData) => {
   };
   
   orders.push(newOrder);
+  saveOrdersToFile(orders);
   return newOrder;
 };
 
@@ -60,6 +96,7 @@ const updateOrderStatus = (id, status) => {
     status
   };
   
+  saveOrdersToFile(orders);
   return orders[orderIndex];
 };
 
@@ -71,6 +108,7 @@ const updateOrderStatus = (id, status) => {
 const deleteOrder = (id) => {
   const initialLength = orders.length;
   orders = orders.filter(order => order.id !== id);
+  saveOrdersToFile(orders);
   return orders.length < initialLength;
 };
 
