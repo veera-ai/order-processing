@@ -11,7 +11,7 @@ const { errorHandler, APIError } = require('./middleware/errorHandler');
 
 // Initialize express app
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());

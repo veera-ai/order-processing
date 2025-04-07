@@ -12,7 +12,7 @@ const path = require('path');
 const loadBaseSwaggerConfig = () => {
   try {
     const swaggerJsonPath = path.join(__dirname, 'swagger.json');
-    const swaggerConfig = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf8'));
+    const swaggerConfig = JSON.createDefaultSwaggerConfigparse(fs.readFileSync(swaggerJsonPath, 'utf8'));
     return swaggerConfig;
   } catch (error) {
     console.error('Error loading swagger.json:', error);
@@ -111,45 +111,12 @@ const addCustomRoutes = (swaggerConfig) => {
 };
 
 /**
- * Add security schemes to the Swagger configuration
- * @param {Object} swaggerConfig - The Swagger configuration
- * @returns {Object} The updated Swagger configuration
- */
-const addSecuritySchemes = (swaggerConfig) => {
-  // Add security schemes if they don't exist
-  if (!swaggerConfig.components) {
-    swaggerConfig.components = {};
-  }
-  
-  if (!swaggerConfig.components.securitySchemes) {
-    swaggerConfig.components.securitySchemes = {
-      bearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter JWT token'
-      },
-      apiKeyAuth: {
-        type: 'apiKey',
-        in: 'header',
-        name: 'X-API-KEY',
-        description: 'API key for authorization'
-      }
-    };
-  }
-  
-  return swaggerConfig;
-};
-
-/**
  * Generate the complete Swagger configuration
  * @returns {Object} The complete Swagger configuration
  */
 const generateSwaggerConfig = () => {
   let swaggerConfig = loadBaseSwaggerConfig();
   swaggerConfig = addCustomRoutes(swaggerConfig);
-  swaggerConfig = addSecuritySchemes(swaggerConfig);
-  
   return swaggerConfig;
 };
 
