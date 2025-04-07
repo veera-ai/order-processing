@@ -620,7 +620,6 @@
     }
   },
   "components": {
-    "securitySchemes": null,
     "schemas": {
       "Address": {
         "type": "object",
