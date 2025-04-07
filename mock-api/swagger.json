@@ -28,9 +28,6 @@
       "description": "Payment processing endpoints"
     }
   ],
-  "security": [
-    { "bearerAuth": [] }
-  ],
   "paths": {
     "/api/status": {
       "get": {
@@ -624,14 +621,6 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "JWT token authentication"
-      }
-    },
     "schemas": {
       "Address": {
         "type": "object",
@@ -986,33 +975,6 @@
           }
         }
       },
-      "AuthenticationError": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "example": "AUTHENTICATION_FAILED"
-              },
-              "message": {
-                "type": "string",
-                "example": "Authentication failed"
-              },
-              "status": {
-                "type": "integer",
-                "example": 401
-              },
-              "timestamp": {
-                "type": "string",
-                "format": "date-time",
-                "example": "2023-01-01T12:00:00Z"
-              }
-            }
-          }
-        }
-      }
     }
   }
 }

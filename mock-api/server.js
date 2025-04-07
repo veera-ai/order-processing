@@ -8,7 +8,6 @@ const swaggerUi = require('swagger-ui-express');
 const generateSwaggerDocument = require('./swagger.js');
 const routes = require('./routes');
 const { errorHandler, APIError } = require('./middleware/errorHandler');
-const { authenticateToken } = require('./middleware/auth');
 
 // Initialize express app
 const app = express();
@@ -20,8 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev')); // Logging
 
-// Protected API Routes
-app.use('/api', authenticateToken, routes);
+// API Routes
+app.use('/api', routes);
 
 // Swagger documentation
 const swaggerDocument = generateSwaggerDocument();
