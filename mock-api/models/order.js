@@ -1,111 +1,13 @@
 /**
- * Order model and data access functions with atomic file operations and proper error handling
+ * Order model and data access functions
  */
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs').promises;
-const fsSync = require('fs');
-const path = require('path');
-
-// Database file paths
-const dbPath = path.join(__dirname, '../data/database.json');
-const tempDbPath = path.join(__dirname, '../data/database.temp.json');
-const backupDbPath = path.join(__dirname, '../data/database.backup.json');
-const lockFilePath = path.join(__dirname, '../data/database.lock');
+const database = require('../utils/database');
 
 /**
- * Initialize database if it doesn't exist
- * @returns {void}
- */
-const initializeDatabase = async () => {
-  try {
-    if (!fsSync.existsSync(path.dirname(dbPath))) {
-      await fs.mkdir(path.dirname(dbPath), { recursive: true });
-    }
-    
-    if (!fsSync.existsSync(dbPath)) {
-      const initialData = {
-        metadata: {
-          version: '1.0',
-          lastUpdated: new Date().toISOString(),
-          created: new Date().toISOString()
-        },
-        customers: [],
-        products: [],
-        orders: [],
-        payments: [],
-        checkoutSessions: []
-      };
-      await fs.writeFile(dbPath, JSON.stringify(initialData, null, 2));
-    }
-  } catch (error) {
-    throw new Error(`Failed to initialize database: ${error.message}`);
-  }
-};
-
-// Initialize database on module load
-initializeDatabase();
-
-/**
- * Read orders from database file with error handling
- * @returns {Array} Array of orders
- * @throws {Error} If database read fails
- */
-const acquireLock = async () => {
-  try {
-    let attempts = 0;
-    const maxAttempts = 5;
-    const retryDelay = 100; // ms
-
-    while (attempts < maxAttempts) {
-      try {
-        fsSync.writeFileSync(lockFilePath, process.pid.toString(), { flag: 'wx' });
-        return true;
-      } catch (err) {
-        if (err.code === 'EEXIST') {
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
-          attempts++;
-        } else {
-          throw err;
-        }
-      }
-    }
-    throw new Error('Failed to acquire lock after maximum attempts');
-  } catch (error) {
-    throw new Error(`Failed to acquire database lock: ${error.message}`);
-  }
-};
-
-const releaseLock = () => {
-  try {
-    if (fsSync.existsSync(lockFilePath)) {
-      fsSync.unlinkSync(lockFilePath);
-    }
-  } catch (error) {
-    console.error(`Warning: Failed to release database lock: ${error.message}`);
-  }
-};
-
-const readOrdersFromFile = async () => {
-  try {
-    await acquireLock();
-    const data = await fs.readFile(dbPath, 'utf8');
-    const db = JSON.parse(data);
-    return db.orders || [];
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      await initializeDatabase();
-      return [];
-    }
-    throw new Error(`Failed to read orders from database: ${error.message}`);
-  } finally {
-    releaseLock();
-  }
-};
-
-/**
- * Save orders to database file using atomic operations
- * @param {Array} orders - Array of orders to save
- * @throws {Error} If database save fails
+ * Validate order data
+ * @param {Object} order - Order object to validate
+ * @throws {Error} If validation fails
  */
 const validateOrder = (order) => {
   const requiredFields = ['id', 'orderNumber', 'orderDate', 'status', 'customerId', 'items'];
@@ -125,61 +27,32 @@ const validateOrder = (order) => {
   }
 };
 
-const saveOrdersToFile = async (orders) => {
+/**
+ * Save orders to database
+ * @param {Array} orders - Array of orders to save
+ * @throws {Error} If save operation fails
+ */
+const saveOrders = async (orders) => {
   try {
-    await acquireLock();
-    
     // Validate all orders before saving
     orders.forEach(validateOrder);
-
-    // Read current database
-    const data = await fs.readFile(dbPath, 'utf8');
-    const db = JSON.parse(data);
-    
-    // Create backup of current database
-    await fs.writeFile(backupDbPath, data);
-    
-    // Update orders and metadata
-    db.orders = orders;
-    db.metadata.lastUpdated = new Date().toISOString();
-    
-    // Write to temporary file first
-    await fs.writeFile(tempDbPath, JSON.stringify(db, null, 2));
-    
-    // Atomically rename temporary file to actual database file
-    await fs.rename(tempDbPath, dbPath);
-    
-    // Remove backup file on successful save
-    if (fsSync.existsSync(backupDbPath)) {
-      await fs.unlink(backupDbPath);
-    }
+    await database.updateCollection('orders', orders);
   } catch (error) {
-    // Restore from backup if available
-    if (fsSync.existsSync(backupDbPath)) {
-      await fs.copyFile(backupDbPath, dbPath);
-      await fs.unlink(backupDbPath);
-    }
-    throw new Error(`Failed to save orders to database: ${error.message}`);
-  } finally {
-    // Cleanup temporary files
-    if (fsSync.existsSync(tempDbPath)) {
-      await fs.unlink(tempDbPath);
-    }
-    releaseLock();
+    throw new Error(`Failed to save orders: ${error.message}`);
   }
 };
 
-// Initialize orders from database
-let orders = readOrdersFromFile();
+// Initialize orders
+let orders = [];
 
 /**
  * Get all orders
  * @returns {Array} Array of orders
  * @throws {Error} If database read fails
  */
-const getOrders = () => {
+const getOrders = async () => {
   try {
-    orders = readOrdersFromFile();
+    orders = await database.getCollection('orders');
     return orders;
   } catch (error) {
     throw new Error(`Failed to get orders: ${error.message}`);
@@ -192,9 +65,9 @@ const getOrders = () => {
  * @returns {Object|null} Order object or null if not found
  * @throws {Error} If database read fails
  */
-const getOrderById = (id) => {
+const getOrderById = async (id) => {
   try {
-    orders = readOrdersFromFile();
+    orders = await database.getCollection('orders');
     return orders.find(order => order.id === id) || null;
   } catch (error) {
     throw new Error(`Failed to get order by ID: ${error.message}`);
@@ -207,15 +80,14 @@ const getOrderById = (id) => {
  * @returns {Object} Created order
  * @throws {Error} If order creation fails
  */
-const createOrder = (orderData) => {
+const createOrder = async (orderData) => {
   try {
     // Validate required fields
     if (!orderData.customerId || !orderData.items || !orderData.items.length) {
       throw new Error('Missing required order data');
     }
 
-    orders = readOrdersFromFile();
-    
+    orders = await database.getCollection('orders');
     const newOrder = {
       id: uuidv4(),
       orderNumber: `ORD-${Date.now()}`,
@@ -225,7 +97,7 @@ const createOrder = (orderData) => {
     };
     
     orders.push(newOrder);
-    saveOrdersToFile(orders);
+    await saveOrders(orders);
     return newOrder;
   } catch (error) {
     throw new Error(`Failed to create order: ${error.message}`);
@@ -239,13 +111,13 @@ const createOrder = (orderData) => {
  * @returns {Object|null} Updated order or null if not found
  * @throws {Error} If order update fails
  */
-const updateOrderStatus = (id, status) => {
+const updateOrderStatus = async (id, status) => {
   try {
     if (!id || !status) {
       throw new Error('Order ID and status are required');
     }
 
-    orders = readOrdersFromFile();
+    orders = await database.getCollection('orders');
     const orderIndex = orders.findIndex(order => order.id === id);
     
     if (orderIndex === -1) {
@@ -263,7 +135,7 @@ const updateOrderStatus = (id, status) => {
       updatedAt: new Date().toISOString()
     };
     
-    saveOrdersToFile(orders);
+    await saveOrders(orders);
     return orders[orderIndex];
   } catch (error) {
     throw new Error(`Failed to update order status: ${error.message}`);
@@ -276,13 +148,13 @@ const updateOrderStatus = (id, status) => {
  * @returns {boolean} True if deleted, false if not found
  * @throws {Error} If order deletion fails
  */
-const deleteOrder = (id) => {
+const deleteOrder = async (id) => {
   try {
     if (!id) {
       throw new Error('Order ID is required');
     }
 
-    orders = readOrdersFromFile();
+    orders = await database.getCollection('orders');
     const initialLength = orders.length;
     const orderToDelete = orders.find(order => order.id === id);
     
@@ -296,7 +168,7 @@ const deleteOrder = (id) => {
     }
     
     orders = orders.filter(order => order.id !== id);
-    saveOrdersToFile(orders);
+    await saveOrders(orders);
     return orders.length < initialLength;
   } catch (error) {
     throw new Error(`Failed to delete order: ${error.message}`);
