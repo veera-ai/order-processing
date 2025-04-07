@@ -7,11 +7,11 @@ const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const generateSwaggerDocument = require('./swagger.js');
 const routes = require('./routes');
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler } = require('./middleware/errorHandler');
 
 // Initialize express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors());
