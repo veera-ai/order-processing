@@ -2,33 +2,40 @@
  * Order model and data access functions with atomic file operations and proper error handling
  */
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 
 // Database file paths
 const dbPath = path.join(__dirname, '../data/database.json');
 const tempDbPath = path.join(__dirname, '../data/database.temp.json');
 const backupDbPath = path.join(__dirname, '../data/database.backup.json');
+const lockFilePath = path.join(__dirname, '../data/database.lock');
 
 /**
  * Initialize database if it doesn't exist
  * @returns {void}
  */
-const initializeDatabase = () => {
+const initializeDatabase = async () => {
   try {
-    if (!fs.existsSync(path.dirname(dbPath))) {
-      fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    if (!fsSync.existsSync(path.dirname(dbPath))) {
+      await fs.mkdir(path.dirname(dbPath), { recursive: true });
     }
     
-    if (!fs.existsSync(dbPath)) {
+    if (!fsSync.existsSync(dbPath)) {
       const initialData = {
+        metadata: {
+          version: '1.0',
+          lastUpdated: new Date().toISOString(),
+          created: new Date().toISOString()
+        },
         customers: [],
         products: [],
         orders: [],
         payments: [],
         checkoutSessions: []
       };
-      fs.writeFileSync(dbPath, JSON.stringify(initialData, null, 2));
+      await fs.writeFile(dbPath, JSON.stringify(initialData, null, 2));
     }
   } catch (error) {
     throw new Error(`Failed to initialize database: ${error.message}`);
@@ -43,17 +50,55 @@ initializeDatabase();
  * @returns {Array} Array of orders
  * @throws {Error} If database read fails
  */
-const readOrdersFromFile = () => {
+const acquireLock = async () => {
   try {
-    const data = fs.readFileSync(dbPath, 'utf8');
+    let attempts = 0;
+    const maxAttempts = 5;
+    const retryDelay = 100; // ms
+
+    while (attempts < maxAttempts) {
+      try {
+        fsSync.writeFileSync(lockFilePath, process.pid.toString(), { flag: 'wx' });
+        return true;
+      } catch (err) {
+        if (err.code === 'EEXIST') {
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          attempts++;
+        } else {
+          throw err;
+        }
+      }
+    }
+    throw new Error('Failed to acquire lock after maximum attempts');
+  } catch (error) {
+    throw new Error(`Failed to acquire database lock: ${error.message}`);
+  }
+};
+
+const releaseLock = () => {
+  try {
+    if (fsSync.existsSync(lockFilePath)) {
+      fsSync.unlinkSync(lockFilePath);
+    }
+  } catch (error) {
+    console.error(`Warning: Failed to release database lock: ${error.message}`);
+  }
+};
+
+const readOrdersFromFile = async () => {
+  try {
+    await acquireLock();
+    const data = await fs.readFile(dbPath, 'utf8');
     const db = JSON.parse(data);
     return db.orders || [];
   } catch (error) {
     if (error.code === 'ENOENT') {
-      initializeDatabase();
+      await initializeDatabase();
       return [];
     }
     throw new Error(`Failed to read orders from database: ${error.message}`);
+  } finally {
+    releaseLock();
   }
 };
 
@@ -62,40 +107,65 @@ const readOrdersFromFile = () => {
  * @param {Array} orders - Array of orders to save
  * @throws {Error} If database save fails
  */
-const saveOrdersToFile = (orders) => {
+const validateOrder = (order) => {
+  const requiredFields = ['id', 'orderNumber', 'orderDate', 'status', 'customerId', 'items'];
+  const missingFields = requiredFields.filter(field => !order[field]);
+  
+  if (missingFields.length > 0) {
+    throw new Error(`Invalid order data: Missing required fields: ${missingFields.join(', ')}`);
+  }
+
+  if (!Array.isArray(order.items) || order.items.length === 0) {
+    throw new Error('Invalid order data: Items must be a non-empty array');
+  }
+
+  const validStatuses = ['CREATED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+  if (!validStatuses.includes(order.status)) {
+    throw new Error(`Invalid order status: ${order.status}`);
+  }
+};
+
+const saveOrdersToFile = async (orders) => {
   try {
+    await acquireLock();
+    
+    // Validate all orders before saving
+    orders.forEach(validateOrder);
+
     // Read current database
-    const data = fs.readFileSync(dbPath, 'utf8');
+    const data = await fs.readFile(dbPath, 'utf8');
     const db = JSON.parse(data);
     
     // Create backup of current database
-    fs.writeFileSync(backupDbPath, data);
+    await fs.writeFile(backupDbPath, data);
     
-    // Update orders
+    // Update orders and metadata
     db.orders = orders;
+    db.metadata.lastUpdated = new Date().toISOString();
     
     // Write to temporary file first
-    fs.writeFileSync(tempDbPath, JSON.stringify(db, null, 2));
+    await fs.writeFile(tempDbPath, JSON.stringify(db, null, 2));
     
     // Atomically rename temporary file to actual database file
-    fs.renameSync(tempDbPath, dbPath);
+    await fs.rename(tempDbPath, dbPath);
     
     // Remove backup file on successful save
-    if (fs.existsSync(backupDbPath)) {
-      fs.unlinkSync(backupDbPath);
+    if (fsSync.existsSync(backupDbPath)) {
+      await fs.unlink(backupDbPath);
     }
   } catch (error) {
     // Restore from backup if available
-    if (fs.existsSync(backupDbPath)) {
-      fs.copyFileSync(backupDbPath, dbPath);
-      fs.unlinkSync(backupDbPath);
+    if (fsSync.existsSync(backupDbPath)) {
+      await fs.copyFile(backupDbPath, dbPath);
+      await fs.unlink(backupDbPath);
     }
     throw new Error(`Failed to save orders to database: ${error.message}`);
   } finally {
     // Cleanup temporary files
-    if (fs.existsSync(tempDbPath)) {
-      fs.unlinkSync(tempDbPath);
+    if (fsSync.existsSync(tempDbPath)) {
+      await fs.unlink(tempDbPath);
     }
+    releaseLock();
   }
 };
 

@@ -1,4 +1,9 @@
 {
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2023-08-03T10:15:00Z",
+    "created": "2023-08-01T00:00:00Z"
+  },
   "customers": [
     {
       "id": "c001a123-1234-5678-9abc-def012345678",
