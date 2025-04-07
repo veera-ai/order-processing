@@ -1,0 +1,204 @@
+{
+  "customers": [
+    {
+      "id": "c001a123-1234-5678-9abc-def012345678",
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@example.com",
+      "phone": "(555) 123-4567",
+      "address": {
+        "street": "123 Main St",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+      }
+    },
+    {
+      "id": "c002b234-2345-6789-bcde-f01234567890",
+      "firstName": "Emily",
+      "lastName": "Johnson",
+      "email": "emily.johnson@example.com",
+      "phone": "(555) 234-5678",
+      "address": {
+        "street": "456 Oak Ave",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001",
+        "country": "USA"
+      }
+    },
+    {
+      "id": "c003c345-3456-7890-cdef-012345678901",
+      "firstName": "Michael",
+      "lastName": "Brown",
+      "email": "michael.brown@example.com",
+      "phone": "(555) 345-6789",
+      "address": {
+        "street": "789 Maple Rd",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601",
+        "country": "USA"
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "p001a123-1234-5678-9abc-def012345678",
+      "name": "Laptop",
+      "category": "Electronics",
+      "unitPrice": 999.99,
+      "description": "High-performance laptop with latest specifications",
+      "stockQuantity": 50
+    },
+    {
+      "id": "p002b234-2345-6789-bcde-f01234567890",
+      "name": "Smartphone",
+      "category": "Electronics",
+      "unitPrice": 699.99,
+      "description": "Latest model smartphone with advanced features",
+      "stockQuantity": 100
+    },
+    {
+      "id": "p003c345-3456-7890-cdef-012345678901",
+      "name": "Headphones",
+      "category": "Electronics",
+      "unitPrice": 149.99,
+      "description": "Wireless noise-canceling headphones",
+      "stockQuantity": 75
+    }
+  ],
+  "orders": [
+    {
+      "id": "o001a123-1234-5678-9abc-def012345678",
+      "orderNumber": "ORD-20230801-001",
+      "orderDate": "2023-08-01T10:30:00Z",
+      "status": "DELIVERED",
+      "customerId": "c001a123-1234-5678-9abc-def012345678",
+      "customerName": "John Smith",
+      "items": [
+        {
+          "id": "p001a123-1234-5678-9abc-def012345678",
+          "name": "Laptop",
+          "quantity": 1,
+          "unitPrice": 999.99
+        }
+      ],
+      "shippingAddress": {
+        "street": "123 Main St",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+      },
+      "billingAddress": {
+        "street": "123 Main St",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+      },
+      "subtotal": 999.99,
+      "tax": 80.00,
+      "shippingCost": 10.50,
+      "totalAmount": 1090.49
+    },
+    {
+      "id": "o002b234-2345-6789-bcde-f01234567890",
+      "orderNumber": "ORD-20230802-001",
+      "orderDate": "2023-08-02T14:45:00Z",
+      "status": "PROCESSING",
+      "customerId": "c002b234-2345-6789-bcde-f01234567890",
+      "customerName": "Emily Johnson",
+      "items": [
+        {
+          "id": "p002b234-2345-6789-bcde-f01234567890",
+          "name": "Smartphone",
+          "quantity": 1,
+          "unitPrice": 699.99
+        },
+        {
+          "id": "p003c345-3456-7890-cdef-012345678901",
+          "name": "Headphones",
+          "quantity": 1,
+          "unitPrice": 149.99
+        }
+      ],
+      "shippingAddress": {
+        "street": "456 Oak Ave",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001",
+        "country": "USA"
+      },
+      "billingAddress": {
+        "street": "456 Oak Ave",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001",
+        "country": "USA"
+      },
+      "subtotal": 849.98,
+      "tax": 68.00,
+      "shippingCost": 11.00,
+      "totalAmount": 928.98
+    }
+  ],
+  "payments": [
+    {
+      "id": "py001a123-1234-5678-9abc-def012345678",
+      "orderId": "o001a123-1234-5678-9abc-def012345678",
+      "transactionId": "TXN-20230801-001",
+      "paymentMethod": "CREDIT_CARD",
+      "amount": 1090.49,
+      "status": "COMPLETED",
+      "paymentDate": "2023-08-01T10:35:00Z"
+    },
+    {
+      "id": "py002b234-2345-6789-bcde-f01234567890",
+      "orderId": "o002b234-2345-6789-bcde-f01234567890",
+      "transactionId": "TXN-20230802-001",
+      "paymentMethod": "PAYPAL",
+      "amount": 928.98,
+      "status": "PENDING",
+      "paymentDate": "2023-08-02T14:50:00Z"
+    }
+  ],
+  "checkoutSessions": [
+    {
+      "id": "cs001a123-1234-5678-9abc-def012345678",
+      "customerId": "c003c345-3456-7890-cdef-012345678901",
+      "items": [
+        {
+          "id": "p002b234-2345-6789-bcde-f01234567890",
+          "name": "Smartphone",
+          "quantity": 1,
+          "unitPrice": 699.99
+        }
+      ],
+      "shippingAddress": {
+        "street": "789 Maple Rd",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601",
+        "country": "USA"
+      },
+      "billingAddress": {
+        "street": "789 Maple Rd",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601",
+        "country": "USA"
+      },
+      "paymentMethod": "CREDIT_CARD",
+      "subtotal": 699.99,
+      "tax": 56.00,
+      "shippingCost": 10.50,
+      "total": 766.49,
+      "createdAt": "2023-08-03T09:15:00Z",
+      "expiresAt": "2023-08-03T10:15:00Z",
+      "status": "PENDING"
+    }
+  ]
+}
